@@ -1,0 +1,886 @@
+
+<html>
+   <head>
+      <style type="text/css">
+         .sikuli-code {
+            font-size: 20px;
+            font-family: "Osaka-mono", Monospace;
+            line-height: 1.5em;
+            display:table-cell;
+            white-space: pre-wrap;       /* css-3 */
+            white-space: -moz-pre-wrap !important;  /* Mozilla, since 1999 */
+            white-space: -pre-wrap;      /* Opera 4-6 */
+            white-space: -o-pre-wrap;    /* Opera 7 */
+            word-wrap: break-word;       /* Internet Explorer 5.5+ */
+            width: 99%;   /* remove horizontal scroll-bar when viewing in IE7 */
+         }
+         .sikuli-code img {
+            vertical-align: middle;
+            margin: 2px;
+            border: 1px solid #ccc;
+            padding: 2px;
+            -moz-border-radius: 5px;
+            -webkit-border-radius: 5px;
+            -moz-box-shadow: 1px 1px 1px gray;
+            -webkit-box-shadow: 1px 1px 2px gray;
+         }
+         .kw {
+            color: blue;
+         }
+         .skw {
+            color: rgb(63, 127, 127);
+         }
+
+         .str {
+            color: rgb(128, 0, 0);
+         }
+
+         .dig {
+            color: rgb(128, 64, 0);
+         }
+
+         .cmt {
+            color: rgb(200, 0, 200);
+         }
+
+         h2 {
+            display: inline;
+            font-weight: normal;
+         }
+
+         .info {
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+            margin-bottom: 20px;
+            display: none;
+         }
+
+         a {
+            color: #9D2900;
+         }
+
+         body {
+            font-family: "Trebuchet MS", Arial, Sans-Serif;
+         }
+
+      </style>
+   </head>
+<body>
+<div class="info">
+<h2>Balloonion.sikuli\Alligator_automated_farmer.sikuli</h2> <a href="Balloonion.sikuli\Alligator_automated_farmer.zip">(Download this script)</a>
+</div>
+<pre class="sikuli-code">
+<span class="kw">from</span> datetime <span class="kw">import</span> *
+<span class="kw">from</span> math <span class="kw">import</span> *
+<span class="kw">from</span> random <span class="kw">import</span> *
+<span class="kw">import</span> shutil
+
+cocWindow = App(<span class="str">"Bluestacks"</span>).window(<span class="dig">0</span>)
+
+loons_per_side = <span class="dig">30</span>
+minions_per_side = <span class="dig">30</span>
+
+<span class="cmt">#TODO: check for presence of full army in training
+</span><span class="cmt">#TODO: remove snow in samples :{
+</span>
+minGoldToAttack = <span class="dig">160000</span>
+minElixirToAttack = <span class="dig">160000</span>
+minDeToAttack = <span class="dig">0</span>
+
+fullExamples = [<img src="1451644219572.png" />, <img src="1451663222229.png" />, <img src="1451713958560.png" />, <img src="1451714097308.png" />, <img src="1451714122782.png" />, <img src="1451714396145.png" />, <img src="1451714414665.png" />, <img src="1451738698221.png" />, <img src="1451764106576.png" />, <img src="1451766219783.png" />, <img src="1451766235710.png" />, <img src="1451766251405.png" />,<img src="1451766260893.png" />, <img src="1451796406407.png" />,<img src="1451796419942.png" />,<img src="1451796429391.png" />,<img src="1452113488649.png" />,<img src="1452113500761.png" />,<img src="1452113512004.png" />,<img src="1452113551528.png" />,<img src="1452113559922.png" />,<img src="1452144678556.png" />,<img src="1452192239430.png" />,<img src="1452192251064.png" />,<img src="1452192933858.png" />]
+emptyExamples = [<img src="1451643867528.png" />, <img src="1451715540614.png" />, <img src="1451715570452.png" />,<img src="1451715596492.png" />, <img src="1451715644429.png" />, <img src="1451715666970.png" />, <img src="1451715832641.png" />, <img src="1451715916882.png" />, <img src="1451716123070.png" />, <img src="1451738491446.png" />, <img src="1451738611396.png" />, <img src="1451765613005.png" />, <img src="1451826767850.png" />]
+pumpExamples = [<img src="1456035576329.png" />, <img src="1456035639369.png" />]
+<span class="cmt">#pumpExamples = [ "1451766607360.png","1451766821330.png", "1451766665530.png","1451767058806.png", "1451767126861.png"]
+</span><span class="cmt"># pumpExamples = ["1451636052190.png", "1451637073330.png", "1451641075253.png", "1451641150949.png"]              
+</span>
+
+cutX = <span class="dig">175</span>
+cutY = <span class="dig">130</span>
+fastSearchArea = Region(cocWindow.x+cutX, cocWindow.y+cutY, cocWindow.w - <span class="dig">2</span>*cutX, cocWindow.h - <span class="dig">2</span>*cutY)
+
+<span class="kw">def</span> attack():
+    <span class="kw">if</span> <span class="kw">not</span> startAttacking():
+        <span class="kw">return</span> False
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="dig">90</span>): <span class="cmt"># So, after 90 attacks, return to mainscreen (done through CheckIdle)</span>
+        <span class="kw">print</span> <span class="str">"Attacks tried "</span>, (i+<span class="dig">1</span>)
+        sleepytime = randint(<span class="dig">0</span>,<span class="dig">3</span>)
+        <span class="skw">sleep</span>(sleepytime)
+        <span class="kw">if</span> isGoodOpponent():
+            <span class="kw">if</span> deployTroops():
+                finishBattleAndGoHome()
+                <span class="kw">return</span> True
+            <span class="kw">else</span>:
+                <span class="kw">return</span> False
+        <span class="kw">else</span>:
+            <span class="kw">if</span> <span class="kw">not</span> nextOpponent():
+                <span class="kw">return</span> False
+    <span class="kw">return</span> False
+
+<span class="kw">def</span> startAttacking():
+    <span class="kw">try</span>:
+        <span class="skw">sleep</span>(<span class="dig">1</span>)
+        cocWindow.<span class="skw">find</span>(<img src="1453843887137.png" />).<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">1</span>)
+        cocWindow.<span class="skw">find</span>(<img src="1420258681129.png" />).<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">1</span>)
+
+        <span class="kw">if</span> (cocWindow.exists(<img src="1449332295238.png" />)) <span class="kw">or</span> (cocWindow.exists(<img src="1420258740243.png" />)):
+            cocWindow.<span class="skw">find</span>(<img src="1420258740243.png" />).<span class="skw">click</span>()
+
+        <span class="kw">return</span> True
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"Error starting the attack process"</span>
+        <span class="kw">return</span> False
+
+
+
+<span class="kw">def</span> nextOpponent():
+    <span class="kw">try</span>:
+        cocWindow.<span class="skw">find</span>(<img src="1420259749784.png" />).<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">2</span>)
+        cocWindow.<span class="skw">wait</span>(<img src="1449332351287.png" />, <span class="dig">20</span>)
+        <span class="kw">return</span> True
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"Error in searching for new opponent"</span>
+        <span class="skw">sleep</span>(<span class="dig">2</span>)
+        <span class="kw">return</span> False
+
+<span class="kw">def</span> determineTH():
+    <span class="kw">if</span> (cocWindow.exists(<img src="1449930476335.png" />)):
+        temp = cocWindow.getLastMatch()
+        <span class="kw">return</span> (<span class="dig">9</span>, temp.getCenter().getX(), temp.getCenter().getY())
+    <span class="kw">if</span> (cocWindow.exists(<img src="1449930618274.png" />)):
+        temp = cocWindow.getLastMatch()
+        <span class="kw">return</span> (<span class="dig">10</span>, temp.getCenter().getX(), temp.getCenter().getY())
+    <span class="kw">if</span> (cocWindow.exists(<img src="1449930570846.png" />)):
+        temp = cocWindow.getLastMatch()
+        <span class="kw">return</span> (<span class="dig">8</span>, temp.getCenter().getX(), temp.getCenter().getY())
+    <span class="kw">if</span> (cocWindow.exists(<img src="1449930709238.png" />)):
+        temp = cocWindow.getLastMatch()
+        <span class="kw">return</span> (<span class="dig">11</span>, temp.getCenter().getX(), temp.getCenter().getY())
+    <span class="kw">return</span> False
+
+<span class="kw">def</span> allPumpsFull():
+    <span class="kw">print</span> <span class="str">"Checking Pumps and Vaults now"</span>
+    checkshield = False
+    checkmine = True
+    checktank = False
+    checkvault = False
+    shieldRegion = Region((cocWindow.x), (cocWindow.y), <span class="dig">67</span>, <span class="dig">141</span>)
+
+<span class="cmt"># Check for presence of shield
+</span>    <span class="kw">if</span> (<span class="kw">not</span> checkshield) <span class="kw">or</span> (shieldRegion.exists(Pattern(<img src="1450674720451.png" />).similar(<span class="dig">0.90</span>))):
+        <span class="kw">if</span> checkshield:
+            <span class="kw">print</span> <span class="str">"Opponent has no shield"</span>
+        <span class="kw">else</span>:
+            <span class="kw">print</span> <span class="str">"Shield not checked"</span>
+    <span class="kw">else</span>:
+        <span class="kw">print</span> <span class="str">"Shield found, not a suitable opponent"</span>
+        <span class="kw">return</span> False
+
+<span class="cmt"># Check Elixir tanks    
+</span>    <span class="kw">if</span> (<span class="kw">not</span> checktank) <span class="kw">or</span> (cocWindow.exists(<img src="1450301598264.png" />)):
+        <span class="kw">if</span> checktank:
+            <span class="kw">print</span> <span class="str">"Found near empty elixir tank level 11"</span>
+        <span class="kw">else</span>:
+            <span class="kw">print</span> <span class="str">"Elixir tank not checkend"</span>
+    <span class="kw">else</span>:
+        <span class="kw">print</span> <span class="str">"Elixir tank too full, not a suitable opponent"</span>
+        <span class="kw">return</span> False
+
+<span class="cmt"># Check Gold vault
+</span>    <span class="kw">if</span> (<span class="kw">not</span> checkvault) <span class="kw">or</span> (cocWindow.exists(<img src="1450301632194.png" />)):
+        <span class="kw">if</span> checkvault:
+            <span class="kw">print</span> <span class="str">"Found near empty gold vault level 11"</span>
+        <span class="kw">else</span>:
+            <span class="kw">print</span> <span class="str">"Gold vaults are not checked"</span>
+    <span class="kw">else</span>:
+        <span class="kw">print</span> <span class="str">"Gold vault too full, not a suitable opponent"</span>
+        <span class="kw">return</span> False
+
+<span class="cmt"># Check goldmine... this is an expensive function in terms of time as it needs to zoom in to determine full goldmines
+</span>
+    <span class="kw">if</span> (<span class="kw">not</span> checkmine):
+        <span class="kw">print</span> <span class="str">"Gold mine is not checked"</span>
+        <span class="kw">return</span> True
+    <span class="kw">else</span>:
+        startTime = datetime.now()
+        <span class="kw">print</span> <span class="str">"Started pump investigation at: "</span>, str(startTime)
+        found = False
+        i=<span class="dig">0</span>
+        matchPump = False
+        <span class="kw">for</span> pump <span class="kw">in</span> pumpExamples:
+            <span class="kw">if</span> (<span class="kw">not</span> found):
+                matchPump = fastSearchArea.exists(pump, <span class="dig">1</span>)
+                <span class="kw">if</span> matchPump <span class="kw">and</span> (matchPump.getScore() &gt; <span class="dig">0.75</span>):
+                    <span class="kw">print</span> <span class="str">"Match with element: "</span>, i
+                    allMatchPumps = fastSearchArea.findAll(pump)
+                    matchPumpIterator = fastSearchArea.getLastMatches()
+                    found = True
+                i += <span class="dig">1</span>
+
+        <span class="kw">if</span> (<span class="kw">not</span> found):
+            <span class="kw">print</span> <span class="str">"No suitable gold mines found"</span>
+            <span class="kw">return</span> False
+
+        maxIterations = <span class="dig">3</span>
+        interimIterations = <span class="dig">2</span>
+        iteration = <span class="dig">1</span>
+        margin = <span class="dig">0.03</span>
+        absoluteMax = <span class="dig">0.95</span>
+        absoluteMin = <span class="dig">0.80</span>
+        globalFullMineScore = []
+        globalEmptyMineScore = []
+
+        <span class="kw">while</span> matchPumpIterator.hasNext() <span class="kw">and</span> iteration &lt;= maxIterations:
+            iteration += <span class="dig">1</span>
+            pumpArea = Region(matchPumpIterator.next()).nearby(<span class="dig">10</span>)
+            <span class="cmt"># pumpArea.highlight(2)
+</span>            matched = False
+            matchFull = False
+            matchEmpty = False
+            fullMineSimilarityScore = -<span class="dig">1</span>
+            <span class="kw">for</span> number, example <span class="kw">in</span> enumerate(fullExamples):
+                matchFull = pumpArea.exists(example, <span class="dig">0.05</span>)
+                <span class="kw">if</span> matchFull:
+                    <span class="kw">if</span> matchFull.getScore() &gt; fullMineSimilarityScore:
+                        fullMineSimilarityScore = matchFull.getScore()
+                        matched = matchFull
+                        <span class="kw">print</span> <span class="str">"Iteration: "</span>, iteration
+                        <span class="kw">print</span> <span class="str">"New best match for full pump on: "</span>, number
+                        <span class="kw">print</span> <span class="str">"New best score: "</span>, fullMineSimilarityScore
+                    <span class="kw">else</span>:
+                        <span class="kw">print</span> <span class="str">"No new best score for number: "</span>, number, <span class="str">"score is: "</span>, matchFull.getScore()
+            <span class="kw">if</span> matched:
+                matched = False
+                emptyMineSimilarityScore = -<span class="dig">1</span>
+                <span class="kw">for</span> number, example <span class="kw">in</span> enumerate(emptyExamples):
+                    matchEmpty = pumpArea.exists(example, <span class="dig">0.05</span>)
+                    <span class="kw">if</span> matchEmpty:
+                        <span class="kw">if</span> matchEmpty.getScore() &gt; emptyMineSimilarityScore:
+                            emptyMineSimilarityScore = matchEmpty.getScore()
+                            matched = matchEmpty
+                            <span class="kw">print</span> <span class="str">"Iteration: "</span>, iteration
+                            <span class="kw">print</span> <span class="str">"New best match for empty pump on: "</span>, number
+                            <span class="kw">print</span> <span class="str">"New best score: "</span>, emptyMineSimilarityScore
+                <span class="kw">if</span> fullMineSimilarityScore &gt;= <span class="dig">0</span>: globalFullMineScore.append(fullMineSimilarityScore)
+                <span class="kw">if</span> emptyMineSimilarityScore &gt;= <span class="dig">0</span>: globalEmptyMineScore.append(emptyMineSimilarityScore)
+
+        <span class="kw">print</span> globalFullMineScore
+        <span class="kw">print</span> globalEmptyMineScore
+
+
+        <span class="kw">if</span> (len(globalFullMineScore)&gt;<span class="dig">1</span>) <span class="kw">or</span> (globalFullMineScore&gt;=absoluteMax):
+            fullMineSimilarityScore = mean(globalFullMineScore)
+        <span class="kw">else</span>:
+            <span class="kw">print</span> <span class="str">"Too few mines detected (&lt;=1) to accurately assess situation, skipping this village."</span>
+            fullMineSimilarityScore = <span class="dig">0</span>
+        <span class="kw">if</span> globalEmptyMineScore:
+            emptyMineSimilarityScore = mean(globalEmptyMineScore)
+        <span class="kw">else</span>:
+            emptyMineSimilarityScore = <span class="dig">0</span>
+
+        <span class="cmt">#if abs(fullMineSimilarityScore - emptyMineSimilarityScore) &lt;= 1:
+</span>            <span class="cmt">#img = capture(cocWindow)
+</span>            <span class="cmt">#stamp = str(datetime.now())
+</span>            <span class="cmt">#shutil.move(img, "C:\\Prive\\Learning_examples\\%.5f_%.5f_screenshot.png" % (fullMineSimilarityScore, emptyMineSimilarityScore))
+</span>            <span class="cmt">#print "%s: Saved screenshot for investigation later" %stamp
+</span>
+        <span class="kw">print</span> <span class="str">"Median value full: "</span>, median(globalFullMineScore)
+        <span class="kw">print</span> <span class="str">"Median value empty: "</span>, median(globalEmptyMineScore)
+        <span class="kw">print</span>
+        <span class="kw">print</span> <span class="str">"Average value full: "</span>, mean(globalFullMineScore)
+        <span class="kw">print</span> <span class="str">"Average value empty: "</span>, mean(globalEmptyMineScore)
+        <span class="kw">print</span>
+        <span class="kw">print</span> <span class="str">"Safety margin used: "</span>, margin
+        endTime = datetime.now()
+        <span class="kw">print</span> <span class="str">"Function ended at: "</span>, str(endTime)
+        <span class="kw">print</span> <span class="str">"Processing time: "</span>, str(endTime-startTime)
+        <span class="kw">print</span>
+        <span class="kw">if</span> ((fullMineSimilarityScore &lt;= emptyMineSimilarityScore + margin) <span class="kw">and</span> (fullMineSimilarityScore &lt;= absoluteMax)) <span class="kw">or</span> (fullMineSimilarityScore &lt; absoluteMin):
+            <span class="kw">print</span> <span class="str">"Gold mine investigated looks more similar to empty gold mine (+ margin score) than full gold mine"</span>
+            <span class="kw">return</span> False
+        <span class="kw">else</span>:
+            <span class="kw">print</span> <span class="str">"Full gold mine detected"</span>
+
+
+<span class="cmt"># If all conditions are met, it is a suitable opponent
+</span>    <span class="kw">return</span> True
+
+<span class="kw">def</span> isGoodOpponent():
+    <span class="kw">try</span>:
+        goldRegion        =   Region((cocWindow.x + <span class="dig">67</span>), (cocWindow.y + <span class="dig">141</span>), <span class="dig">140</span>, <span class="dig">34</span>)
+        elixirRegion      =   Region((cocWindow.x + <span class="dig">67</span>), (cocWindow.y + <span class="dig">180</span>), <span class="dig">140</span>, <span class="dig">34</span>)
+        deRegion          =   Region((cocWindow.x + <span class="dig">67</span>), (cocWindow.y + <span class="dig">218</span>), <span class="dig">125</span>, <span class="dig">34</span>)
+
+        gold = numberOCR(goldRegion, <span class="str">'opponentLootgd'</span>)
+        elixir = numberOCR(elixirRegion, <span class="str">'opponentLoote'</span>)
+        de = numberOCR(deRegion, <span class="str">'opponentLootde'</span>)
+
+        <span class="kw">print</span> <span class="str">"Gold, Elixir, Dark: "</span>, gold, elixir, de
+        text = <span class="str">"%s,%d,%d,%d\n"</span> % (str(datetime.now()),gold, elixir, de)
+
+        <span class="kw">with</span> open(<span class="str">'C:\Prive\Sikulilog\Sikulilog.txt'</span>, <span class="str">'a'</span>) <span class="kw">as</span> f:
+            f.write(text)
+        <span class="kw">if</span> (gold &gt;= minGoldToAttack) <span class="kw">and</span> (elixir &gt;= minElixirToAttack) <span class="kw">and</span> (de &gt;= minDeToAttack) <span class="kw">and</span> allPumpsFull():
+            <span class="kw">return</span> True
+        <span class="kw">return</span> False
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"isGoodOpponent() Something went wrong :("</span>
+        <span class="kw">print</span> sys.exc_info()[<span class="dig">0</span>]
+        <span class="kw">print</span> sys.exc_info()[<span class="dig">1</span>]
+        <span class="kw">return</span> False
+
+<span class="kw">def</span> deployTroops():
+    <span class="cmt"># TODO: Check for full-ish collectors and deploy troops differently if they exist (around all edges)
+</span>
+    <span class="kw">print</span> <span class="str">"[+] Deploying troops"</span>
+
+    <span class="kw">try</span>:
+
+        landmark = cocWindow.<span class="skw">find</span>(Pattern(<img src="1449812770408.png" />).similar(<span class="dig">0.80</span>))
+
+        landmark.highlight(<span class="dig">1</span>)
+
+        Settings.DelayAfterDrag = <span class="dig">0.1</span>
+        Settings.DelayBeforeDrop = <span class="dig">0.3</span>
+        Settings.MoveMouseDelay = <span class="dig">0.3</span>
+        <span class="skw">dragDrop</span>(landmark.getCenter(), Location(cocWindow.x + <span class="dig">68</span>, cocWindow.y + <span class="dig">462</span>))
+        Settings.DelayAfterDrag = <span class="dig">0.3</span>
+        Settings.DelayAfterDrop = <span class="dig">0.3</span>
+        Settings.MoveMouseDelay = <span class="dig">0.3</span>
+
+        landmark = cocWindow.<span class="skw">find</span>(Pattern(<img src="1449812770408.png" />).similar(<span class="dig">0.80</span>)) <span class="cmt"># Doing this again to reposition</span>
+        landmark.highlight(<span class="dig">1</span>)    <span class="cmt"># Necessary to prevent "flinging" the screen...</span>
+
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[!] Could not find attack landmark. Aborting attack."</span>
+        cocWindow.<span class="skw">find</span>(<img src="1449332433972.png" />).<span class="skw">click</span>()
+        <span class="kw">return</span> False
+
+    deployPoints_loons = []
+    deployPoints_minions = []
+    <span class="kw">print</span> <span class="str">"Landmark x: "</span>, landmark.getX()
+    <span class="kw">print</span> <span class="str">"Landmark y: "</span>, landmark.getY()
+
+<span class="cmt"># Derived from original deploypoints. Estimated linear relationship y=f(x)=ax+b  
+</span><span class="cmt"># Starting with leftunder line
+</span>
+<span class="cmt"># Order: leftbelow, leftabove, rightbelow, rightabove
+</span>    abminmax = [(<span class="dig">0.7687</span>, -<span class="dig">110.7</span>, <span class="dig">40</span>, <span class="dig">490</span>), (-<span class="dig">0.758</span>, -<span class="dig">70</span>, <span class="dig">40</span>, <span class="dig">430</span>), (-<span class="dig">0.77</span>, <span class="dig">980</span>, <span class="dig">886</span>, <span class="dig">1400</span>), (<span class="dig">0.74</span>, -<span class="dig">1120</span>, <span class="dig">1025</span>, <span class="dig">1400</span>)]
+<span class="cmt">#    abminmax = [(0.7687, -110.7, 40, 490), (0.7687, -110.7, 40, 490), (-0.77, 980, 886, 1400), (-0.77, 980, 886, 1400)]
+</span>    <span class="kw">for</span> a, b, xmin, xmax <span class="kw">in</span> abminmax:
+        stepsize_loons = floor((xmax-xmin)/float(loons_per_side))
+        <span class="kw">for</span> x <span class="kw">in</span> range(xmin, xmax, stepsize_loons):
+            y = ceil(a*x + b)
+            deployPoints_loons.append(Location((landmark.getX() + x), (landmark.getY() + y)))
+        <span class="kw">print</span> <span class="str">"Number of loon deploypoints added: "</span>, len(range(xmin, xmax, stepsize_loons))
+        <span class="kw">if</span> len(range(xmin, xmax, stepsize_loons)) &gt; loons_per_side: <span class="cmt"># if accidentally, too many points are added, kill one of them</span>
+            deployPoints_loons.pop()
+            <span class="kw">print</span> <span class="str">"Popped one loon drop point to reduce size"</span>
+        <span class="kw">if</span> len(range(xmin, xmax, stepsize_loons)) &lt; loons_per_side: <span class="cmt"># if too few points are added, add one on xmax</span>
+            deployPoints_loons.append(Location((landmark.getX() + xmax), (landmark.getY() + a*xmax + b)))
+            <span class="kw">print</span> <span class="str">"Added one loon drop point to get full deployment"</span>
+
+        stepsize_minions = floor((xmax-xmin)/float(minions_per_side))
+        <span class="kw">for</span> x <span class="kw">in</span> range(xmin, xmax, stepsize_minions):
+            y = ceil(a*x + b)
+            deployPoints_minions.append(Location((landmark.getX() + x), (landmark.getY() + y)))
+        <span class="kw">print</span> <span class="str">"Number of minion deploypoints added: "</span>, len(range(xmin, xmax, stepsize_minions))
+        <span class="kw">if</span> len(range(xmin, xmax, stepsize_minions)) &gt; minions_per_side: <span class="cmt"># if accidentally, too many points are added, kill one of them</span>
+            deployPoints_minions.pop()
+            <span class="kw">print</span> <span class="str">"Popped one Minion droppoint to reduce size"</span>
+        <span class="kw">if</span> len(range(xmin, xmax, stepsize_minions)) &lt; minions_per_side: <span class="cmt"># if too few points are added, add one on xmax</span>
+            deployPoints_minions.append(Location((landmark.getX() + xmax), (landmark.getY() + a*xmax + b)))
+            <span class="kw">print</span> <span class="str">"Added one Minion drop point for full deployment"</span>
+
+    Settings.MoveMouseDelay = <span class="dig">0.1</span>
+
+    <span class="kw">try</span>:
+        <span class="cmt"># troops_loons     = cocWindow.find("1449911639483.png")
+</span>
+        troops_loons = cocWindow.<span class="skw">find</span>(<img src="1450029597057.png" />)
+    <span class="kw">except</span>:
+        troops_loons = False
+
+    <span class="kw">try</span>:
+        <span class="cmt"># troops_minions        = cocWindow.find("1449911656596.png")
+</span>        troops_minions = cocWindow.<span class="skw">find</span>(<img src="1450029645401.png" />)
+    <span class="kw">except</span>:
+        troops_minions = False
+
+
+    <span class="kw">try</span>:
+        troops_barbking       = cocWindow.<span class="skw">find</span>(<img src="troops_barbking.png" />)
+    <span class="kw">except</span>:
+        troops_barbking = False
+
+    <span class="kw">try</span>:
+        troops_archqueen      = cocWindow.<span class="skw">find</span>(<img src="1434104532219.png" />)
+    <span class="kw">except</span>:
+        troops_archqueen = False
+
+    <span class="kw">try</span>:
+        troops_lightning      = cocWindow.<span class="skw">find</span>(<img src="1445081986545.png" />)
+    <span class="kw">except</span>:
+        troops_lightning = False
+
+    <span class="kw">print</span> <span class="str">"Starting barch deployment"</span>
+    <span class="kw">for</span> n <span class="kw">in</span> range(<span class="dig">4</span>):
+        troops_loons.<span class="skw">click</span>()
+        start = int(n*loons_per_side)
+        eind = int(min((n+<span class="dig">1</span>)*loons_per_side,len(deployPoints_loons)))
+        <span class="kw">print</span> start
+        <span class="kw">print</span> eind
+        <span class="kw">for</span> point <span class="kw">in</span> deployPoints_loons[start:eind]:
+            cocWindow.<span class="skw">click</span>(point)
+        troops_minions.<span class="skw">click</span>()
+        <span class="kw">for</span> point <span class="kw">in</span> deployPoints_minions[start:eind]:
+            cocWindow.<span class="skw">click</span>(point)
+
+<span class="cmt">#    print "Starting loon deployment" 
+</span><span class="cmt">#    troops_loons.click()
+</span><span class="cmt">#    for point in deployPoints_loons:
+</span><span class="cmt">#        cocWindow.click(point)
+</span>
+<span class="cmt">#    print "Starting minion deployment"
+</span><span class="cmt">#    troops_minions.click()
+</span><span class="cmt">#    for point in deployPoints_minions:
+</span><span class="cmt">#        cocWindow.click(point)
+</span>
+    <span class="cmt"># Then the Barb King and Archqueen if available
+</span>    clickpoint = randint(<span class="dig">0</span>, len(deployPoints_minions))
+
+    <span class="kw">if</span> troops_barbking != False:
+        troops_barbking.<span class="skw">click</span>()
+        cocWindow.<span class="skw">click</span>(deployPoints_minions[clickpoint])
+    <span class="kw">if</span> troops_archqueen != False:
+        troops_archqueen.<span class="skw">click</span>()
+        cocWindow.<span class="skw">click</span>(deployPoints_minions[clickpoint])
+    <span class="skw">sleep</span>(<span class="dig">8</span>)
+    <span class="kw">if</span> troops_barbking != False:
+        troops_barbking.<span class="skw">click</span>()
+    <span class="kw">if</span> troops_archqueen != False:
+        troops_archqueen.<span class="skw">click</span>()
+
+    <span class="cmt"># Cleanup if necessary
+</span>    troops_loons.<span class="skw">click</span>()
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="dig">4</span>*loons_per_side):
+        cocWindow.<span class="skw">click</span>(deployPoints_minions[clickpoint])
+    troops_minions.<span class="skw">click</span>()
+    <span class="kw">for</span> i <span class="kw">in</span> range(<span class="dig">4</span>*minions_per_side):
+        cocWindow.<span class="skw">click</span>(deployPoints_minions[clickpoint])
+
+    <span class="kw">if</span> troops_lightning != False:
+        <span class="cmt"># deRegion = Region((cocWindow.x + 67), (cocWindow.y + 218), 125, 34)
+</span>        troops_lightning.<span class="skw">click</span>()
+        <span class="cmt"># darknow = numberOCR(deRegion, 'opponentLootde')
+</span>        <span class="cmt"># delta_dark = darknow
+</span>        <span class="cmt"># print "Dark before lightning sequence: ", darknow
+</span>        <span class="kw">for</span> _ <span class="kw">in</span> range(<span class="dig">5</span>):
+            <span class="kw">try</span>:
+                <span class="cmt">#if delta_dark &gt;= 50:
+</span>                    <span class="cmt">#darkold = darknow
+</span>                cocWindow.<span class="skw">find</span>(<img src="1450331436108.png" />).<span class="skw">click</span>()
+                    <span class="cmt">#darknow = numberOCR(deRegion, 'opponentLootde')
+</span>                    <span class="cmt">#delta_dark = darkold - darknow
+</span>                    <span class="cmt">#print "Change in dark due to lightning: ", delta_dark
+</span>                <span class="skw">sleep</span>(<span class="dig">6</span>)
+            <span class="kw">except</span>:
+                <span class="kw">pass</span>
+
+    <span class="kw">print</span> <span class="str">"[+] Troops have all been deployed"</span>
+
+    Settings.MoveMouseDelay = <span class="dig">0.1</span>
+
+    <span class="kw">return</span> True
+
+
+<span class="kw">def</span> campsFull():
+    <span class="kw">try</span>:
+        output = False
+        cocWindow.<span class="skw">find</span>(<img src="1435988759411.png" />).<span class="skw">click</span>()
+        <span class="kw">if</span>(cocWindow.exists(Pattern(<img src="1449865407262.png" />).similar(<span class="dig">0.93</span>))):
+
+            output = True
+
+        cocWindow.<span class="skw">find</span>(Pattern(<img src="1420240870546.png" />).similar(<span class="dig">0.90</span>)).<span class="skw">click</span>()
+        <span class="kw">return</span> output
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[INFO] Error in checking whether camps are full"</span>
+        <span class="kw">return</span> False
+
+<span class="kw">def</span> needToCheck():
+    <span class="kw">try</span>:
+        output = True
+        <span class="kw">if</span> (cocWindow.<span class="skw">find</span>(Pattern(<img src="1450506815787.png" />).similar(<span class="dig">0.90</span>))):
+            output = False
+        <span class="kw">return</span> output
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[INFO] Error in checking whether direct training makes sense"</span>
+        <span class="kw">return</span> True
+
+<span class="kw">def</span> finishBattleAndGoHome():
+    <span class="cmt"># TODO: Collect (via OCR) stats about the battle
+</span>    <span class="cmt">#       and record them for later analysis and review
+</span>    cocWindow.<span class="skw">wait</span>(<img src="1449349515181.png" />, <span class="dig">210</span>)
+    <span class="kw">if</span> (cocWindow.exists(<img src="1449349523638.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+
+        <span class="kw">return</span> True
+    <span class="kw">else</span>:
+        <span class="kw">return</span> False
+
+<span class="kw">def</span> trainTroops():
+    <span class="cmt"># Routine to train troops for attack
+</span>
+    <span class="kw">print</span> <span class="str">"[+] Training new troops"</span>
+
+    <span class="kw">try</span>:
+        cocWindow.<span class="skw">find</span>(<img src="1436077197737.png" />).<span class="skw">click</span>()
+        cocWindow.<span class="skw">find</span>(Pattern(<img src="1434481359875.png" />).similar(<span class="dig">0.95</span>)).<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">1</span>)
+
+<span class="cmt"># Make sure barracks are empty, no remaining 'to be trained groups':
+</span>        Settings.MoveMouseDelay = <span class="dig">0.1</span>
+        <span class="kw">if</span> (cocWindow.exists(Pattern(<img src="1449865463693.png" />).similar(<span class="dig">0.93</span>))):
+            cocWindow.<span class="skw">find</span>(<img src="1420240870546.png" />).<span class="skw">click</span>()
+            <span class="skw">sleep</span>(<span class="dig">2</span>)
+            <span class="kw">return</span> True
+
+        <span class="kw">if</span> needToCheck():
+            <span class="kw">for</span> i <span class="kw">in</span> range (<span class="dig">6</span>):
+                <span class="kw">while</span> (cocWindow.exists(Pattern(<img src="1435776186163.png" />).similar(<span class="dig">0.90</span>))):
+                    mouseMove(Pattern(<img src="1435776186163.png" />).similar(<span class="dig">0.90</span>))
+                    mouseDown(Button.LEFT)
+                    <span class="skw">sleep</span> (<span class="dig">3</span>)
+                    mouseUp()
+                    <span class="skw">sleep</span> (<span class="dig">0.5</span>)
+                cocWindow.<span class="skw">find</span>(Pattern(<img src="1434481359875.png" />).similar(<span class="dig">0.95</span>)).<span class="skw">click</span>()
+                <span class="skw">sleep</span> (<span class="dig">1</span>)
+            cocWindow.<span class="skw">find</span>(Pattern(<img src="1449344786371.png" />).targetOffset(-<span class="dig">122</span>,-<span class="dig">2</span>)).<span class="skw">click</span>()
+            <span class="skw">sleep</span>(<span class="dig">1</span>)
+        <span class="kw">else</span>:
+            <span class="kw">print</span> <span class="str">"Camps are empty, no need to check"</span>
+
+<span class="cmt"># Let's train!
+</span>        <span class="kw">for</span> i <span class="kw">in</span> range(<span class="dig">4</span>):
+            <span class="kw">print</span> <span class="str">"clicking loons to be trained"</span>
+<span class="cmt">#            to_click = cocWindow.find("1435776406520.png")
+</span>
+            to_click = cocWindow.<span class="skw">find</span>(<img src="1450029768897.png" />)
+            to_click2 = cocWindow.<span class="skw">find</span>(<img src="1450029797031.png" />)
+            <span class="kw">for</span> n <span class="kw">in</span> range(loons_per_side):
+                to_click.<span class="skw">click</span>()
+            <span class="kw">for</span> n <span class="kw">in</span> range(minions_per_side):
+                to_click2.<span class="skw">click</span>()
+            cocWindow.<span class="skw">find</span>(<img src="1420308052116.png" />).<span class="skw">click</span>()
+            <span class="skw">sleep</span>(<span class="dig">1</span>)
+<span class="cmt">#        for i in range(2):
+</span><span class="cmt">#            print "clicking minions to be trained"
+</span><span class="cmt">#            to_click = cocWindow.find("1449913483673.png")
+</span><span class="cmt">#            for n in range(25):
+</span><span class="cmt">#                to_click.click()
+</span><span class="cmt">#            cocWindow.find("1420308052116.png").click()
+</span>            <span class="skw">sleep</span>(<span class="dig">1</span>)
+
+        <span class="cmt"># Now, let's train some lightning spells to boost the dark elixir farming with...
+</span>        cocWindow.<span class="skw">find</span>(Pattern(<img src="1449348974233.png" />).targetOffset(-<span class="dig">41</span>,-<span class="dig">2</span>)).<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">1</span>)
+        <span class="kw">for</span> n <span class="kw">in</span> range(<span class="dig">5</span>):
+            <span class="kw">try</span>:
+                cocWindow.<span class="skw">find</span>(Pattern(<img src="1445081750363.png" />).similar(<span class="dig">0.75</span>)).<span class="skw">click</span>()
+            <span class="kw">except</span>:
+                <span class="kw">pass</span>
+
+        cocWindow.<span class="skw">find</span>(<img src="1420240870546.png" />).<span class="skw">click</span>()
+
+
+        <span class="skw">sleep</span>(<span class="dig">2</span>)
+
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"Error training new troops"</span>
+        <span class="kw">if</span> cocWindow.exists(<img src="1420240870546.png" />):
+            cocWindow.getLastMatch().<span class="skw">click</span>()
+        <span class="kw">print</span> sys.exc_info()[<span class="dig">0</span>]
+        <span class="kw">print</span> sys.exc_info()[<span class="dig">1</span>]
+
+
+
+
+<span class="kw">def</span> calcTrainTime(barrack):
+    time = <span class="dig">0</span>
+
+    <span class="kw">for</span> (i, count) <span class="kw">in</span> enumerate(barrack):
+        time += (count * trainTimes[i])
+
+    <span class="kw">return</span> time
+
+<span class="kw">def</span> _openSidebar():
+    <span class="kw">try</span>:
+        <span class="kw">if</span> cocWindow.exists(<img src="1420308399291.png" />,<span class="dig">0</span>):
+            cocWindow.getLastMatch().<span class="skw">click</span>()
+            <span class="skw">sleep</span>(<span class="dig">1</span>)
+            <span class="kw">return</span> True
+        <span class="kw">else</span>:
+            <span class="kw">print</span> <span class="str">"Sidebar opener doesn't exist"</span>
+            <span class="kw">return</span> False
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[!] Could not open sidebar"</span>
+        <span class="kw">return</span> False
+
+
+
+<span class="kw">def</span> _closeSidebar():
+    <span class="kw">try</span>:
+        <span class="kw">if</span> cocWindow.exists(<img src="1420238603713.png" />, <span class="dig">0</span>):
+            cocWindow.getLastMatch().<span class="skw">click</span>()
+            <span class="skw">sleep</span>(<span class="dig">2</span>)
+            <span class="kw">return</span> True
+        <span class="kw">else</span>:
+            <span class="kw">print</span> <span class="str">"Sidebar closer doesn't exist"</span>
+            <span class="kw">return</span> False
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[!] Could not close sidebar"</span>
+        <span class="kw">return</span> False
+
+
+
+<span class="kw">def</span> collectResources():
+    resources = [<img src="1420235690079.png" />, <img src="1420231189687.png" /> ,<img src="1443260705975.png" />]
+
+    window = Region((cocWindow.x + <span class="dig">210</span>), (cocWindow.y + <span class="dig">85</span>), <span class="dig">1025</span>, <span class="dig">790</span>)
+    window.highlight(<span class="dig">3</span>)
+    <span class="kw">for</span> resource <span class="kw">in</span> resources:
+        <span class="kw">try</span>:
+            <span class="kw">for</span> _temp <span class="kw">in</span> window.findAll(resource):
+                _temp.<span class="skw">click</span>()
+        <span class="kw">except</span>:
+            <span class="kw">print</span> <span class="str">"[!] There was an error collecting resources"</span>
+
+
+    <span class="kw">return</span>
+
+
+
+
+<span class="cmt"># Starts BlueStacks Player
+</span><span class="cmt"># Opens Clash of Clans app
+</span><span class="cmt"># Centers village on the screen
+</span><span class="cmt">#
+</span><span class="cmt"># Returns: True if succeeded, False if anything failed
+</span><span class="kw">def</span> startClashOfClans():
+    startAndFocusApp()
+    waitVanish(<img src="1420181477444.png" />, FOREVER)
+    <span class="skw">sleep</span>(<span class="dig">3</span>)
+
+    cocWindow = App(<span class="str">"Bluestacks"</span>).window(<span class="dig">0</span>)
+    recentApps = Region((cocWindow.x + <span class="dig">8</span>), (cocWindow.y + <span class="dig">110</span>), <span class="dig">1430</span>, <span class="dig">150</span>)
+
+    <span class="kw">try</span>:
+        recentApps.<span class="skw">find</span>(Pattern(<img src="1420182034354.png" />).exact()).<span class="skw">click</span>()
+
+        cocWindow.<span class="skw">wait</span>(<img src="1420182438717.png" />, <span class="dig">30</span>)
+        cocWindow.waitVanish(<img src="1420182438717.png" />, FOREVER)
+
+        <span class="kw">if</span> cocWindow.exists(<img src="1420255908709.png" />):
+            cocWindow.getLastMatch().<span class="skw">click</span>()
+            <span class="skw">sleep</span>(<span class="dig">1</span>)
+        <span class="kw">else</span>:
+            <span class="skw">sleep</span>(<span class="dig">3</span>)
+
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[!] Could not find COC icon, assuming game is already started..."</span>
+
+
+    <span class="kw">return</span> True
+
+
+<span class="cmt"># Zooms the screen all the way out
+</span><span class="cmt">#
+</span><span class="cmt"># TODO: Reliably center the village on the map
+</span><span class="cmt">#
+</span><span class="cmt"># Returns: True on success, False otherwise
+</span><span class="kw">def</span> zoomOutAndCenter():
+    <span class="kw">try</span>:
+        startAndFocusApp()
+        <span class="kw">print</span> <span class="str">"[+] Zooming out and centering village"</span>
+
+        probeRegion = Region((cocWindow.x + <span class="dig">67</span>), (cocWindow.y + <span class="dig">112</span>), <span class="dig">1</span>, <span class="dig">1</span>)
+        probeRegion.highlight(<span class="dig">1</span>)
+        <span class="kw">for</span> jj <span class="kw">in</span> range(<span class="dig">10</span>):
+            <span class="skw">type</span>(<span class="str">"O"</span>, Key.CTRL)
+            <span class="skw">sleep</span>(<span class="dig">0.5</span>)
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[!] Something went wrong while trying to zoom out..."</span>
+        <span class="kw">return</span> False
+
+    <span class="kw">return</span> True
+
+
+
+<span class="kw">def</span> startAndFocusApp():
+    <span class="kw">try</span>:
+        switchApp(<span class="str">"C:\Program Files (x86)\BlueStacks\HD-StartLauncher.exe"</span>)
+        <span class="skw">sleep</span>(<span class="dig">1</span>)
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[!] Could not start/focus the BlueStacks Player"</span>
+        <span class="kw">return</span> False
+
+    <span class="kw">return</span> True
+
+
+
+<span class="cmt"># Checks to see if we've been kicked for being idle
+</span><span class="cmt"># If so, it will reload the game and reset the village
+</span><span class="cmt"># so we can pick up where we left off.
+</span><span class="cmt">#
+</span><span class="cmt"># TODO: Check for recent attack dialog when we return to from idle
+</span><span class="kw">def</span> checkIdle():
+    sleepytime = randint(<span class="dig">0</span>,<span class="dig">3</span>)
+    <span class="skw">sleep</span>(sleepytime)
+    output=False
+    <span class="kw">if</span> (cocWindow.exists(<img src="1434261314820.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">25</span>)
+        output = True
+    <span class="kw">if</span> (cocWindow.exists(<img src="1451080879815.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">3</span>)
+    <span class="kw">if</span> (cocWindow.exists(<img src="1451081020701.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">3</span>)
+    <span class="kw">if</span> (cocWindow.exists(<img src="1434081589892.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">15</span>)
+        output = True
+
+    <span class="kw">if</span> (cocWindow.exists(<img src="1449912828190.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+
+        <span class="skw">sleep</span>(<span class="dig">15</span>)
+        output = True
+
+    <span class="kw">if</span> (cocWindow.exists(<img src="1420184095574.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+
+        <span class="skw">sleep</span>(<span class="dig">15</span>)
+        output = True
+    <span class="kw">if</span> (cocWindow.exists(<img src="1435094547913.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">3</span>)
+        output = True
+
+    <span class="kw">if</span> (cocWindow.exists(<img src="1449513899595.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">15</span>)
+        output = True
+
+    <span class="kw">if</span> (cocWindow.exists(<img src="1449349451415.png" />)):
+        cocWindow.getLastMatch().<span class="skw">click</span>()
+        <span class="skw">sleep</span>(<span class="dig">15</span>)
+        output = True
+    <span class="kw">return</span> output
+
+<span class="kw">def</span> preventIdle():
+<span class="cmt"># Exception handling is done in main loop
+</span>    <span class="kw">try</span>:
+        _openSidebar()
+        <span class="skw">sleep</span>(<span class="dig">5</span>)
+        _closeSidebar()
+        <span class="skw">sleep</span>(<span class="dig">5</span>)
+        <span class="cmt"># collectResources()
+</span>    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"Something didn't work in Preventing Idle..."</span>
+        <span class="kw">return</span> false
+
+
+<span class="kw">def</span> numberOCR(Reg, ocrType):
+    <span class="kw">if</span> ocrType == <span class="str">'opponentLootgd'</span>:
+        numberImages = [Pattern(<img src="1435777897467-1.png" />).similar(<span class="dig">0.95</span>), Pattern(<img src="1435777964859-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435777974432-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435777991728-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778017035-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778042241-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778076500-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778104099-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778149456-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778172200-1.png" />).similar(<span class="dig">0.95</span>)]
+
+    <span class="kw">if</span> ocrType == <span class="str">'opponentLoote'</span>:
+        numberImages = [Pattern(<img src="1435778405976-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778430683-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778455587-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778468876-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778476135-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778529622-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778699082-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778722192-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778733921-1.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1435778761846-1.png" />).similar(<span class="dig">0.95</span>)]
+
+
+    <span class="kw">if</span> ocrType == <span class="str">'opponentLootde'</span>:
+        numberImages = [Pattern(<img src="1444982279904.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982341992.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982352335.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982392822.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982414423.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982632547.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982688939.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982718187.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982763458.png" />).similar(<span class="dig">0.95</span>),Pattern(<img src="1444982782354.png" />).similar(<span class="dig">0.95</span>)]
+
+    digitalNumber = <span class="dig">0</span>
+    resultList = list()
+    <span class="cmt"># Reg.highlight(3)
+</span>
+    <span class="kw">for</span> x <span class="kw">in</span> numberImages:
+        <span class="kw">if</span> Reg.exists(x,<span class="dig">0</span>):
+            Reg.findAll(x)
+            <span class="cmt">#digital find result into list            
+</span>            digitalList = list(Reg.getLastMatches())
+            <span class="cmt">#convert list into tuple(image, digital)
+</span>            <span class="kw">for</span> y <span class="kw">in</span> digitalList:
+                <span class="cmt">#resultList.append(tuple(y,0))
+</span>                t = (y,digitalNumber)
+                resultList.append(t)
+        digitalNumber = digitalNumber+<span class="dig">1</span>
+    sortedResultList = sorted(resultList,key=<span class="kw">lambda</span> x: x[<span class="dig">0</span>].x)
+    <span class="cmt">#print sortedResultList
+</span>    ret = <span class="dig">0</span>
+    listLen = len(sortedResultList)
+    <span class="kw">for</span> x, i <span class="kw">in</span> enumerate(sortedResultList):
+        ret += <span class="dig">10</span> **(listLen - x - <span class="dig">1</span>) * i[<span class="dig">1</span>]
+    <span class="kw">return</span> ret
+
+<span class="kw">def</span> median(lst):
+    sortedLst = sorted(lst)
+    lstLen = len(lst)
+    index = (lstLen - <span class="dig">1</span>) // <span class="dig">2</span>
+
+    <span class="kw">if</span> (lstLen % <span class="dig">2</span>):
+        <span class="kw">return</span> sortedLst[index]
+    <span class="kw">else</span>:
+        <span class="kw">return</span> (sortedLst[index] + sortedLst[index + <span class="dig">1</span>])/<span class="dig">2.0</span>
+
+<span class="kw">def</span> mean(lst):
+    <span class="kw">if</span> len(lst) &gt; <span class="dig">0</span>:
+        <span class="kw">return</span> sum(lst) / float(len(lst))
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="dig">0</span>
+
+<span class="kw">def</span> secondsSinceLast(ts):
+    diff = datetime.now() - ts;
+
+    <span class="kw">return</span> diff.seconds
+
+<span class="kw">def</span> initialise():
+    <span class="kw">print</span> <span class="str">"[INFO] RESTART at: "</span> + str(datetime.now())
+    startAndFocusApp()
+    checkIdle()
+    <span class="kw">print</span> <span class="str">"[INFO] Ready to go at: "</span> + str(datetime.now())
+
+
+<span class="kw">def</span> attackLoop():
+    <span class="kw">try</span>:
+        checkIdle()
+        zoomOutAndCenter()
+        <span class="kw">if</span> (campsFull() == True):
+            <span class="kw">print</span> <span class="str">"[INFO] Time to clean up, train and then attack..."</span>
+            trainTroops()
+            zoomOutAndCenter()
+            attack()
+        <span class="kw">else</span>:
+            preventIdle()
+    <span class="kw">except</span>:
+        <span class="kw">print</span> <span class="str">"[INFO] Error with Bluestacks player detected at: "</span> + str(datetime.now())
+        initialise()
+
+<span class="cmt"># Main 'program' HAHA
+</span>
+<span class="cmt"># Uncomment to debug allPumpsFull() function
+</span>
+<span class="cmt">#allPumpsFull()
+</span>
+initialise()
+<span class="kw">while</span> True:
+    attackLoop()
+</pre>
+</body>
+</html>
